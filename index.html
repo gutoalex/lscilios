@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LS Cílios - Gestão Financeira</title>
+    <title>LS Cílios - Gestão Completa</title>
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -30,17 +30,18 @@
             min-height: 100vh;
         }
 
-        /* --- MENU LATERAL (Mobile Responsivo) --- */
+        /* --- MENU LATERAL (Igual ao seu original) --- */
         aside {
-            width: 250px;
+            width: 310px; /* Largura original do seu arquivo */
             background: var(--white);
             padding: 20px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.05);
-            display: none; /* Escondido no mobile por padrão */
+            box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+            display: none; 
             flex-direction: column;
             position: fixed;
             height: 100%;
             z-index: 100;
+            border-right: 1px solid #eee;
         }
 
         @media (min-width: 768px) {
@@ -53,8 +54,8 @@
         }
         
         .logo-circle {
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             background: var(--primary);
             border-radius: 50%;
             display: flex;
@@ -62,7 +63,7 @@
             justify-content: center;
             margin: 0 auto 10px;
             color: white;
-            font-size: 24px;
+            font-size: 22px;
             font-weight: bold;
         }
 
@@ -80,6 +81,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            margin-bottom: 5px;
         }
 
         nav button:hover, nav button.active {
@@ -115,8 +117,7 @@
 
         .card h3 { margin: 0; font-size: 14px; color: #7f8c8d; }
         .card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--primary-dark); }
-        .card.saldo p { color: var(--green); }
-
+        
         /* FORMULÁRIO */
         .form-box {
             background: var(--white);
@@ -126,10 +127,7 @@
             margin-bottom: 20px;
         }
 
-        .form-group {
-            margin-bottom: 15px;
-        }
-
+        .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: 500; }
         
         input, select {
@@ -154,9 +152,7 @@
             transition: 0.3s;
         }
         
-        button.btn-save:hover { background-color: #219150; }
-        
-        /* Modo Edição */
+        /* Estilo Botão de Edição */
         button.btn-update { background-color: var(--orange) !important; }
 
         /* LISTA DE EXTRATO */
@@ -183,21 +179,22 @@
         
         .acoes {
             display: flex;
-            gap: 10px;
+            gap: 15px;
             margin-left: 10px;
+            justify-content: flex-end;
+            margin-top: 5px;
         }
 
         .btn-icon {
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 18px;
-            padding: 5px;
+            font-size: 16px;
+            padding: 0;
             transition: 0.2s;
         }
         .btn-icon.edit { color: var(--orange); }
         .btn-icon.del { color: var(--red); }
-        .btn-icon:hover { transform: scale(1.2); }
 
         /* GRÁFICOS */
         .chart-container {
@@ -207,19 +204,6 @@
             margin-bottom: 20px;
             height: 300px;
         }
-
-        /* TERMÔMETRO */
-        .termometro-box {
-            background: #fff; padding: 20px; border-radius: 12px; margin-top: 20px;
-            text-align: center;
-        }
-        .progress-bar {
-            width: 100%; background: #eee; height: 20px; border-radius: 10px; margin-top: 10px; overflow: hidden;
-        }
-        .progress-fill {
-            height: 100%; background: var(--primary); width: 0%; transition: 1s;
-        }
-
     </style>
 </head>
 <body>
@@ -241,24 +225,16 @@
         
         <div class="cards-container">
             <div class="card">
-                <h3>Receitas (Mês)</h3>
+                <h3>Receitas (Total)</h3>
                 <p style="color: var(--green);" id="dash-receitas">R$ 0,00</p>
             </div>
             <div class="card">
-                <h3>Despesas (Mês)</h3>
+                <h3>Despesas (Total)</h3>
                 <p style="color: var(--red);" id="dash-despesas">R$ 0,00</p>
             </div>
-            <div class="card saldo">
+            <div class="card">
                 <h3>Saldo Atual</h3>
                 <p id="dash-saldo">R$ 0,00</p>
-            </div>
-        </div>
-
-        <div class="termometro-box">
-            <h4>🌡️ Cobertura de Custos Fixos</h4>
-            <p id="msg-meta">Cadastre contas fixas para ver sua meta.</p>
-            <div class="progress-bar">
-                <div class="progress-fill" id="barra-meta"></div>
             </div>
         </div>
 
@@ -269,10 +245,12 @@
     </main>
 
     <main id="lancamentos-screen" style="display:none;">
-        <h2>📝 Novo Lançamento</h2>
+        <h2>📝 Gerenciar Lançamentos</h2>
         
         <div class="form-box">
-            <input type="hidden" id="edit-id"> <div class="form-group">
+            <input type="hidden" id="edit-id">
+            
+            <div class="form-group">
                 <label>Tipo:</label>
                 <select id="tipo">
                     <option value="receita">Entrada (Receita)</option>
@@ -281,8 +259,8 @@
             </div>
 
             <div class="form-group">
-                <label>Descrição (Ex: Manutenção Maria):</label>
-                <input type="text" id="descricao" placeholder="Nome da cliente ou conta">
+                <label>Descrição:</label>
+                <input type="text" id="descricao" placeholder="Ex: Cílios Híbrido - Maria">
             </div>
 
             <div class="form-group">
@@ -293,7 +271,7 @@
             <div class="form-group">
                 <label>Categoria:</label>
                 <select id="categoria">
-                    <option value="Serviço">Serviço (Cílios/Sobrancelha)</option>
+                    <option value="Serviço">Serviço</option>
                     <option value="Material">Material</option>
                     <option value="Aluguel/Contas">Aluguel/Contas Fixas</option>
                     <option value="Marketing">Marketing</option>
@@ -317,35 +295,29 @@
 
     <main id="relatorios-screen" style="display:none;">
         <h2>📈 Relatórios</h2>
-        
         <div class="chart-container">
             <canvas id="chartPizza"></canvas>
         </div>
-        
         <div class="chart-container">
             <canvas id="chartBarra"></canvas>
         </div>
     </main>
 
     <script>
-        // --- 1. CONFIGURAÇÃO DO BANCO DE DADOS ---
-        // Tenta usar a chave padrão. Se seus dados não aparecerem, mude 'lscilios_db' para o nome antigo.
-        const DB_KEY = 'lscilios_db'; 
+        // --- CONFIGURAÇÃO ---
+        const DB_KEY = 'lscilios_db'; // Mantém o mesmo nome para não perder dados
         let transacoes = JSON.parse(localStorage.getItem(DB_KEY)) || [];
 
-        // --- 2. INICIALIZAÇÃO ---
         window.onload = () => {
             document.getElementById('data').valueAsDate = new Date();
             atualizarInterface();
         };
 
-        // --- 3. FUNÇÕES DE NAVEGAÇÃO ---
+        // --- NAVEGAÇÃO ---
         function mostrarTela(telaId) {
-            // Esconde todas
             document.querySelectorAll('main').forEach(m => m.style.display = 'none');
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
 
-            // Mostra a escolhida
             if(telaId === 'dashboard') {
                 document.getElementById('dashboard-screen').style.display = 'block';
                 document.getElementById('nav-dash').classList.add('active');
@@ -355,11 +327,11 @@
             } else {
                 document.getElementById('relatorios-screen').style.display = 'block';
                 document.getElementById('nav-rel').classList.add('active');
-                renderizarGraficos(); // Atualiza gráficos ao abrir a aba
+                renderizarGraficos();
             }
         }
 
-        // --- 4. FUNÇÕES CORE (SALVAR/EDITAR/EXCLUIR) ---
+        // --- LÓGICA DE SALVAR E EDITAR ---
         function salvarTransacao() {
             const idEdit = document.getElementById('edit-id').value;
             const tipo = document.getElementById('tipo').value;
@@ -369,19 +341,19 @@
             const data = document.getElementById('data').value;
 
             if (!descricao || isNaN(valor)) {
-                alert("Preencha a descrição e o valor!");
+                alert("Preencha descrição e valor!");
                 return;
             }
 
             if (idEdit) {
-                // --- MODO EDIÇÃO ---
+                // MODO EDIÇÃO
                 const index = transacoes.findIndex(t => t.id == idEdit);
                 if (index !== -1) {
                     transacoes[index] = { id: parseInt(idEdit), tipo, descricao, valor, categoria, data };
-                    alert("Atualizado com sucesso!");
+                    alert("Registro atualizado com sucesso! ✅");
                 }
             } else {
-                // --- MODO CRIAÇÃO ---
+                // MODO CRIAÇÃO
                 const novaTransacao = {
                     id: Date.now(),
                     tipo,
@@ -391,6 +363,7 @@
                     data
                 };
                 transacoes.push(novaTransacao);
+                alert("Lançamento salvo! 💾");
             }
 
             salvarNoCelular();
@@ -398,14 +371,15 @@
             atualizarInterface();
         }
 
+        // --- FUNÇÃO PARA EDITAR (O BOTÃO LÁPIS) ---
         function editarItem(id) {
             const item = transacoes.find(t => t.id === id);
             if (!item) return;
 
-            // Muda para a tela de lançamentos
+            // Vai para tela de lançamentos
             mostrarTela('lancamentos');
 
-            // Preenche os campos
+            // Preenche tudo
             document.getElementById('edit-id').value = item.id;
             document.getElementById('tipo').value = item.tipo;
             document.getElementById('descricao').value = item.descricao;
@@ -413,13 +387,14 @@
             document.getElementById('categoria').value = item.categoria;
             document.getElementById('data').value = item.data;
 
-            // Muda visual do botão
+            // Muda o botão para "Atualizar"
             const btn = document.getElementById('btn-salvar');
             btn.innerText = "🔄 Atualizar Lançamento";
             btn.classList.add('btn-update');
             document.getElementById('btn-cancelar').style.display = 'block';
 
-            window.scrollTo(0, 0); // Sobe a tela
+            // Rola para o topo
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function cancelarEdicao() {
@@ -427,7 +402,7 @@
         }
 
         function excluirItem(id) {
-            if (confirm("Tem certeza que deseja excluir?")) {
+            if (confirm("Deseja realmente apagar este registro?")) {
                 transacoes = transacoes.filter(t => t.id !== id);
                 salvarNoCelular();
                 atualizarInterface();
@@ -440,7 +415,6 @@
             document.getElementById('valor').value = '';
             document.getElementById('data').valueAsDate = new Date();
             
-            // Reseta botões
             const btn = document.getElementById('btn-salvar');
             btn.innerText = "Adicionar Lançamento";
             btn.classList.remove('btn-update');
@@ -451,7 +425,7 @@
             localStorage.setItem(DB_KEY, JSON.stringify(transacoes));
         }
 
-        // --- 5. RENDERIZAÇÃO (MOSTRAR NA TELA) ---
+        // --- RENDERIZAÇÃO NA TELA ---
         function atualizarInterface() {
             const listaDash = document.getElementById('lista-dashboard');
             const listaComp = document.getElementById('lista-completa');
@@ -461,20 +435,14 @@
 
             let totalRec = 0;
             let totalDesp = 0;
-            let totalFixos = 0;
 
-            // Ordena por data (mais recente primeiro)
+            // Ordena por data (mais novo primeiro)
             const ordenadas = [...transacoes].sort((a, b) => new Date(b.data) - new Date(a.data));
 
             ordenadas.forEach((t, index) => {
-                // Cálculos
                 if (t.tipo === 'receita') totalRec += t.valor;
-                else {
-                    totalDesp += t.valor;
-                    if (t.categoria === 'Aluguel/Contas') totalFixos += t.valor;
-                }
+                else totalDesp += t.valor;
 
-                // HTML do Item
                 const htmlItem = `
                     <div class="transacao-item ${t.tipo}">
                         <div class="info">
@@ -484,50 +452,31 @@
                         <div class="valores">
                             <p>R$ ${t.valor.toFixed(2)}</p>
                             <div class="acoes">
-                                <button class="btn-icon edit" onclick="editarItem(${t.id})"><i class="fas fa-pen"></i></button>
-                                <button class="btn-icon del" onclick="excluirItem(${t.id})"><i class="fas fa-trash"></i></button>
+                                <button class="btn-icon edit" onclick="editarItem(${t.id})" title="Editar">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <button class="btn-icon del" onclick="excluirItem(${t.id})" title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
                 `;
 
                 listaComp.innerHTML += htmlItem;
-                if (index < 5) listaDash.innerHTML += htmlItem; // Mostra só 5 no dash
+                if (index < 5) listaDash.innerHTML += htmlItem;
             });
 
-            // Atualiza Cards
             document.getElementById('dash-receitas').innerText = `R$ ${totalRec.toFixed(2)}`;
             document.getElementById('dash-despesas').innerText = `R$ ${totalDesp.toFixed(2)}`;
             document.getElementById('dash-saldo').innerText = `R$ ${(totalRec - totalDesp).toFixed(2)}`;
-
-            // Atualiza Termômetro (Meta simples: Receita vs Custos Fixos)
-            const meta = totalFixos > 0 ? (totalRec / totalFixos) * 100 : 0;
-            const barra = document.getElementById('barra-meta');
-            const msg = document.getElementById('msg-meta');
-            
-            if (totalFixos === 0) {
-                barra.style.width = '0%';
-                msg.innerText = "Cadastre despesas fixas (Aluguel/Contas) para ver o termômetro.";
-            } else {
-                let largura = meta > 100 ? 100 : meta;
-                barra.style.width = largura + '%';
-                
-                if (meta < 100) {
-                    barra.style.background = '#e74c3c'; // Vermelho
-                    msg.innerText = `Faltam R$ ${(totalFixos - totalRec).toFixed(2)} para pagar as contas fixas!`;
-                } else {
-                    barra.style.background = '#27ae60'; // Verde
-                    msg.innerText = "Contas Fixas Pagas! 🚀 O resto é lucro (ou variável).";
-                }
-            }
         }
 
-        // --- 6. GRÁFICOS ---
+        // --- GRÁFICOS (CORES ORIGINAIS) ---
         let chartPizza = null;
         let chartBarra = null;
 
         function renderizarGraficos() {
-            // Prepara dados
             const categorias = {};
             transacoes.forEach(t => {
                 if(t.tipo === 'despesa') {
@@ -536,7 +485,6 @@
             });
 
             const ctxP = document.getElementById('chartPizza').getContext('2d');
-            
             if(chartPizza) chartPizza.destroy();
             
             chartPizza = new Chart(ctxP, {
@@ -545,17 +493,35 @@
                     labels: Object.keys(categorias),
                     datasets: [{
                         data: Object.values(categorias),
-                        backgroundColor: ['#d4a5a5', '#b58585', '#e74c3c', '#95a5a6', '#f1c40f']
+                        // Cores originais do seu PDF
+                        backgroundColor: ['#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#95a5a6']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { 
-                        title: { display: true, text: 'Onde estou gastando?' },
-                        legend: { position: 'bottom' } 
-                    }
+                    plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Despesas por Categoria' } }
                 }
+            });
+
+            // Gráfico de Barras (Receita vs Despesa)
+            let recTotal = 0, despTotal = 0;
+            transacoes.forEach(t => t.tipo === 'receita' ? recTotal += t.valor : despTotal += t.valor);
+
+            const ctxB = document.getElementById('chartBarra').getContext('2d');
+            if(chartBarra) chartBarra.destroy();
+
+            chartBarra = new Chart(ctxB, {
+                type: 'bar',
+                data: {
+                    labels: ['Receitas', 'Despesas'],
+                    datasets: [{
+                        label: 'Financeiro',
+                        data: [recTotal, despTotal],
+                        backgroundColor: ['#27ae60', '#c0392b']
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
             });
         }
     </script>
