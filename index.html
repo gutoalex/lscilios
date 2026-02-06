@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LS Cilios - Sistema Completo</title>
+<title>LS Cilios - Sistema Profissional</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
@@ -29,7 +29,7 @@
         overflow: hidden; 
     }
 
-    /* --- MENU LATERAL --- */
+    /* --- MENU LATERAL (Apenas Cadastro) --- */
     aside {
         width: 310px; 
         background: var(--white); 
@@ -106,13 +106,6 @@
     }
     .btn-lancar:hover { background: var(--primary); }
 
-    /* Botão Cancelar Edição (aparece só quando edita) */
-    #btn-cancelar { 
-        background: #95a5a6; 
-        margin-top: 5px; 
-        display: none; 
-    }
-
     .btn-excel {
         background: #219150; 
         color: white; 
@@ -136,7 +129,7 @@
         gap: 20px; 
     }
 
-    /* 1. CARDS TOTAIS */
+    /* CARDS TOTAIS */
     .cards-grid { 
         display: grid; 
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -156,11 +149,10 @@
     .card.bal { border-left-color: var(--blue); }
     .card .valor { font-size: 1.6rem; font-weight: bold; margin-top: 5px; }
 
-    /* 2. LINHA DO MEIO: CONTAS A PAGAR + TERMÔMETRO */
+    /* PLANEJAMENTO */
     .planning-row { display: flex; gap: 20px; flex-wrap: wrap; }
 
-    /* Box Contas (Esquerda) */
-    .bills-box {
+    .bills-box, .goal-box {
         flex: 1; min-width: 300px; 
         background: white; padding: 20px; 
         border-radius: 12px;
@@ -191,43 +183,30 @@
         border-radius: 50%; font-size: 0.7rem; line-height: 20px; padding: 0; 
     }
     
-    /* Botão Editar Mini */
     .btn-edit-mini {
         background: var(--orange); color: white; width: 24px; height: 24px;
         border-radius: 4px; font-size: 0.8rem; margin-right: 5px; cursor: pointer;
     }
 
-    /* Box Termômetro (Direita) */
-    .goal-box {
-        flex: 1; min-width: 300px; 
-        background: white; padding: 20px; 
-        border-radius: 12px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
-        display: flex; flex-direction: column;
-        justify-content: center; text-align: center;
-    }
-
+    /* Termômetro */
     .progress-container {
         height: 25px; background: #dfe6e9; 
         border-radius: 15px; overflow: hidden; 
         position: relative; margin: 15px 0;
     }
-
     .progress-bar {
         height: 100%; 
         background: linear-gradient(90deg, var(--orange), var(--green));
         width: 0%; transition: width 1s ease-in-out;
     }
-
     .progress-text {
         position: absolute; width: 100%; top: 4px; 
         font-size: 0.8rem; font-weight: bold; color: #2d3436; 
-        text-shadow: 0 0 2px rgba(255,255,255,0.8);
+        text-shadow: 0 0 2px rgba(255,255,255,0.8); width: 100%; text-align: center;
     }
 
-    /* 3. GRÁFICOS */
+    /* GRÁFICOS */
     .charts-row { display: flex; gap: 20px; flex-wrap: wrap; }
-
     .chart-card {
         flex: 1; min-width: 300px; 
         background: white; padding: 20px; 
@@ -236,27 +215,64 @@
         height: 320px;
     }
 
-    /* 4. TABELA */
+    /* TABELA */
     .table-box { 
         background: white; padding: 20px; 
         border-radius: 12px; 
         box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
     }
-
     table { width: 100%; border-collapse: collapse; }
-    
     th { 
         text-align: left; color: #b2bec3; 
         font-size: 0.8rem; padding-bottom: 10px;
         border-bottom: 2px solid #eee; 
     }
-    
     td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9rem; }
-
     .tag { padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
     .tag.servico { background: #e3f2fd; color: #2196f3; }
     .tag.fixo { background: #ffebee; color: #c0392b; }
     .tag.material { background: #fff3e0; color: #e67e22; }
+
+    /* --- ESTILOS DO POP-UP (MODAL) --- */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.5); /* Fundo escuro transparente */
+        display: none; /* Escondido por padrão */
+        justify-content: center; align-items: center;
+        z-index: 1000;
+        backdrop-filter: blur(2px);
+    }
+
+    .modal-box {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        width: 90%;
+        max-width: 400px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px;
+    }
+
+    .modal-header h3 { margin: 0; color: var(--text); }
+    
+    .close-modal {
+        background: none; border: none; font-size: 1.5rem; color: #999; cursor: pointer;
+    }
+
+    .btn-save-modal {
+        background: var(--orange); color: white; padding: 12px; width: 100%; margin-top: 15px;
+    }
 
     @media (max-width: 800px) {
         body { flex-direction: column; overflow-y: auto; height: auto; }
@@ -309,8 +325,7 @@
         <input type="number" id="valor" step="0.01">
     </div>
 
-    <button class="btn-lancar" id="btn-lancar" onclick="lancarCaixa()">REGISTRAR</button>
-    <button class="btn-lancar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+    <button class="btn-lancar" onclick="lancarCaixa()">REGISTRAR</button>
 
     <button class="btn-excel" onclick="exportarExcel()">
         📥 Baixar Excel
@@ -370,15 +385,11 @@
     <div class="charts-row">
         <div class="chart-card">
             <h3 style="margin-top:0; text-align:center;">🍕 Para onde vai o dinheiro?</h3>
-            <div style="height:250px; position:relative;">
-                <canvas id="chartPizza"></canvas>
-            </div>
+            <div style="height:250px; position:relative;"><canvas id="chartPizza"></canvas></div>
         </div>
         <div class="chart-card">
             <h3 style="margin-top:0; text-align:center;">🏆 Top 5 Clientes</h3>
-            <div style="height:250px; position:relative;">
-                <canvas id="chartBarra"></canvas>
-            </div>
+            <div style="height:250px; position:relative;"><canvas id="chartBarra"></canvas></div>
         </div>
     </div>
 
@@ -398,14 +409,58 @@
     </div>
 </main>
 
+<div id="modal-editar" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-header">
+            <h3>✏️ Editar Lançamento</h3>
+            <button class="close-modal" onclick="fecharModal()">×</button>
+        </div>
+        
+        <input type="hidden" id="modal-id">
+        
+        <div class="form-group">
+            <label>Descrição</label>
+            <input type="text" id="modal-desc">
+        </div>
+        
+        <div class="form-group">
+            <label>Tipo</label>
+            <select id="modal-tipo" onchange="toggleClienteModal()">
+                <option value="entrada">💰 Entrada</option>
+                <option value="saida">💸 Saída</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="modal-box-cliente">
+            <label>Cliente</label>
+            <select id="modal-cliente"><option value="">Avulso</option></select>
+        </div>
+
+        <div class="form-group">
+            <label>Categoria</label>
+            <select id="modal-cat">
+                <option value="Serviço">Serviço</option>
+                <option value="Material">Material</option>
+                <option value="Fixo">Custo Fixo</option>
+                <option value="Pessoal">Pessoal</option>
+                <option value="Outros">Outros</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Valor (R$)</label>
+            <input type="number" id="modal-valor" step="0.01">
+        </div>
+
+        <button class="btn-save-modal" onclick="salvarEdicaoModal()">💾 SALVAR ALTERAÇÃO</button>
+    </div>
+</div>
+
 <script>
-// --- DADOS (Mesmas chaves para não perder o que já foi salvo) ---
+// --- DADOS ---
 let transacoes = JSON.parse(localStorage.getItem('ls_final_trans')) || [];
 let contas = JSON.parse(localStorage.getItem('ls_final_contas')) || [];
 let clientes = JSON.parse(localStorage.getItem('ls_final_clientes')) || [];
-
-// Variável para controlar edição
-let idEdicao = null;
 
 let chartP = null;
 let chartB = null;
@@ -417,7 +472,7 @@ window.onload = function() {
     atualizarTela();
 };
 
-// --- FUNÇÕES DE LANÇAMENTO (CAIXA) ---
+// --- FUNÇÕES DE CADASTRO NOVO (MENU LATERAL) ---
 function lancarCaixa() {
     let desc = document.getElementById('desc').value;
     let tipo = document.getElementById('tipo').value;
@@ -428,80 +483,95 @@ function lancarCaixa() {
     if(!desc || isNaN(valor)) { alert("Preencha descrição e valor!"); return; }
     if(tipo === 'saida') cli = '';
 
-    if (idEdicao) {
-        // --- MODO EDIÇÃO ---
-        let index = transacoes.findIndex(t => t.id === idEdicao);
-        if (index !== -1) {
-            transacoes[index] = { 
-                id: idEdicao, 
-                data: transacoes[index].data, 
-                desc, tipo, valor, cat, cliente: cli 
-            };
-            alert("Atualizado com sucesso!");
-        }
-    } else {
-        // --- MODO NOVO ---
-        transacoes.push({ 
-            id: Date.now(), 
-            data: new Date().toLocaleDateString('pt-BR'), 
-            desc, tipo, valor, cat, cliente: cli 
-        });
-    }
+    transacoes.push({ 
+        id: Date.now(), 
+        data: new Date().toLocaleDateString('pt-BR'), 
+        desc, tipo, valor, cat, cliente: cli 
+    });
 
     salvar();
     atualizarTela();
-    cancelarEdicao(); // Limpa e reseta
+    
+    // Limpar campos
+    document.getElementById('desc').value = '';
+    document.getElementById('valor').value = '';
 }
 
-// FUNÇÃO NOVA: Editar
-function editarTransacao(id) {
+// --- FUNÇÕES DO MODAL (EDIÇÃO) ---
+function abrirModalEdicao(id) {
     let t = transacoes.find(x => x.id === id);
     if(!t) return;
 
-    // Preenche campos
-    document.getElementById('desc').value = t.desc;
-    document.getElementById('valor').value = t.valor;
-    document.getElementById('tipo').value = t.tipo;
-    document.getElementById('cat').value = t.cat;
+    // Preenche o Modal
+    document.getElementById('modal-id').value = id;
+    document.getElementById('modal-desc').value = t.desc;
+    document.getElementById('modal-valor').value = t.valor;
+    document.getElementById('modal-tipo').value = t.tipo;
+    document.getElementById('modal-cat').value = t.cat;
+
+    // Atualiza lista de clientes do modal
+    let selModal = document.getElementById('modal-cliente');
+    selModal.innerHTML = '<option value="">Avulso</option>';
+    clientes.forEach(c => {
+        let opt = document.createElement('option');
+        opt.value = c; opt.innerText = c;
+        selModal.appendChild(opt);
+    });
     
-    toggleCliente();
+    // Mostra/Esconde cliente no modal
+    toggleClienteModal();
     if(t.tipo === 'entrada') {
-        document.getElementById('selCliente').value = t.cliente || "";
+        selModal.value = t.cliente || "";
     }
 
-    // Ajusta Visual
-    idEdicao = id;
-    let btn = document.getElementById('btn-lancar');
-    btn.innerText = "SALVAR ALTERAÇÃO 📝";
-    btn.style.backgroundColor = "#e67e22"; // Laranja
-    document.getElementById('btn-cancelar').style.display = 'block';
-
-    // Rola para o menu (Mobile)
-    document.querySelector('aside').scrollTop = 0;
+    // Abre o Modal
+    document.getElementById('modal-editar').style.display = 'flex';
 }
 
-function cancelarEdicao() {
-    document.getElementById('desc').value = '';
-    document.getElementById('valor').value = '';
-    document.getElementById('selCliente').value = '';
-    
-    idEdicao = null;
-    let btn = document.getElementById('btn-lancar');
-    btn.innerText = "REGISTRAR";
-    btn.style.backgroundColor = ""; 
-    document.getElementById('btn-cancelar').style.display = 'none';
+function fecharModal() {
+    document.getElementById('modal-editar').style.display = 'none';
 }
 
+function salvarEdicaoModal() {
+    let id = parseInt(document.getElementById('modal-id').value);
+    let desc = document.getElementById('modal-desc').value;
+    let tipo = document.getElementById('modal-tipo').value;
+    let valor = parseFloat(document.getElementById('modal-valor').value);
+    let cat = document.getElementById('modal-cat').value;
+    let cli = document.getElementById('modal-cliente').value;
+
+    if(!desc || isNaN(valor)) { alert("Erro nos dados!"); return; }
+    if(tipo === 'saida') cli = '';
+
+    let index = transacoes.findIndex(t => t.id === id);
+    if(index !== -1) {
+        transacoes[index] = { 
+            id: id, 
+            data: transacoes[index].data, // Mantém a data original
+            desc, tipo, valor, cat, cliente: cli 
+        };
+        alert("Lançamento atualizado!");
+        salvar();
+        atualizarTela();
+        fecharModal();
+    }
+}
+
+function toggleClienteModal() {
+    let tipo = document.getElementById('modal-tipo').value;
+    document.getElementById('modal-box-cliente').style.display = (tipo === 'entrada') ? 'block' : 'none';
+}
+
+// --- DELETAR ---
 function deletar(id) {
     if(confirm("Apagar este lançamento?")) {
         transacoes = transacoes.filter(t => t.id !== id);
-        if(idEdicao === id) cancelarEdicao();
         salvar();
         atualizarTela();
     }
 }
 
-// --- FUNÇÕES DE CONTAS A PAGAR (FUTURO) ---
+// --- CONTAS A PAGAR ---
 function addConta() {
     let desc = document.getElementById('contaDesc').value;
     let valor = parseFloat(document.getElementById('contaValor').value);
@@ -519,7 +589,6 @@ function addConta() {
 function pagarConta(id) {
     let conta = contas.find(c => c.id === id);
     if(confirm(`Confirmar pagamento de ${conta.desc}?`)) {
-        // Lança no caixa como saída
         transacoes.push({
             id: Date.now(),
             data: new Date().toLocaleDateString('pt-BR'),
@@ -529,7 +598,6 @@ function pagarConta(id) {
             cat: 'Fixo',
             cliente: ''
         });
-        // Remove da lista de pendentes
         contas = contas.filter(c => c.id !== id);
         salvar();
         renderizarContas();
@@ -563,7 +631,7 @@ function renderizarContas() {
     });
 }
 
-// --- FUNÇÕES DE CLIENTES ---
+// --- CLIENTES ---
 function addCliente() {
     let nome = prompt("Nome da Cliente:");
     if(nome) {
@@ -604,7 +672,7 @@ function exportarExcel() {
     link.click();
 }
 
-// --- ATUALIZAÇÃO GERAL E GRÁFICOS ---
+// --- ATUALIZAÇÃO DA TELA ---
 function atualizarTela() {
     const tbody = document.querySelector('#tabela tbody');
     tbody.innerHTML = '';
@@ -613,7 +681,6 @@ function atualizarTela() {
     let gastosPorCat = {};
     let rankingCli = {};
 
-    // Processar transações
     transacoes.sort((a,b) => b.id - a.id).forEach(t => {
         if(t.tipo === 'entrada') {
             ent += t.valor;
@@ -623,7 +690,6 @@ function atualizarTela() {
             gastosPorCat[t.cat] = (gastosPorCat[t.cat] || 0) + t.valor;
         }
 
-        // Tabela com Botão EDITAR
         let tr = document.createElement('tr');
         let tagClass = t.cat.toLowerCase();
         if(!['serviço', 'material', 'fixo'].includes(tagClass)) tagClass = '';
@@ -633,7 +699,7 @@ function atualizarTela() {
             <td><span class="tag ${tagClass}">${t.cat}</span></td>
             <td style="color:${t.tipo==='entrada'?'var(--green)':'var(--red)'}">R$ ${t.valor.toFixed(2)}</td>
             <td style="text-align:right">
-                <button class="btn-edit-mini" onclick="editarTransacao(${t.id})">✎</button>
+                <button class="btn-edit-mini" onclick="abrirModalEdicao(${t.id})">✎</button>
                 <button class="btn-del-mini" onclick="deletar(${t.id})">x</button>
             </td>
         `;
@@ -645,7 +711,7 @@ function atualizarTela() {
     document.getElementById('v-saida').innerText = `R$ ${sai.toFixed(2)}`;
     document.getElementById('v-saldo').innerText = `R$ ${(ent-sai).toFixed(2)}`;
 
-    // LÓGICA DO TERMÔMETRO (META)
+    // Termômetro
     let totalFixoPago = transacoes.filter(t => t.cat === 'Fixo' && t.tipo === 'saida').reduce((acc, t) => acc + t.valor, 0);
     let totalPendente = contas.reduce((acc, c) => acc + c.valor, 0);
     let metaTotal = totalFixoPago + totalPendente;
@@ -677,7 +743,6 @@ function atualizarTela() {
 }
 
 function atualizarGraficos(gastos, clientesObj) {
-    // Pizza
     const ctxP = document.getElementById('chartPizza').getContext('2d');
     if(chartP) chartP.destroy();
     chartP = new Chart(ctxP, {
@@ -692,11 +757,9 @@ function atualizarGraficos(gastos, clientesObj) {
         options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }}}
     });
 
-    // Barras
     const ctxB = document.getElementById('chartBarra').getContext('2d');
     if(chartB) chartB.destroy();
     
-    // Top 5 Clientes
     let sortedCli = Object.entries(clientesObj).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
     chartB = new Chart(ctxB, {
