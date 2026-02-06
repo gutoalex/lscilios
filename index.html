@@ -1,529 +1,730 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LS Cílios - Gestão Completa</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LS Cilios - Sistema Completo</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    :root {
+        --primary: #d4a5a5; /* Rosê Gold */
+        --primary-dark: #b58585;
+        --bg: #f4f7f6;
+        --white: #ffffff;
+        --text: #2c3e50;
+        --green: #27ae60;
+        --red: #c0392b;
+        --blue: #2980b9;
+        --orange: #e67e22;
+    }
+
+    body { 
+        font-family: 'Segoe UI', sans-serif; 
+        margin: 0; 
+        background-color: var(--bg);
+        display: flex; 
+        height: 100vh; 
+        color: var(--text); 
+        overflow: hidden; 
+    }
+
+    /* --- MENU LATERAL --- */
+    aside {
+        width: 310px; 
+        background: var(--white); 
+        padding: 20px;
+        box-shadow: 2px 0 15px rgba(0,0,0,0.05); 
+        display: flex; 
+        flex-direction: column;
+        overflow-y: auto; 
+        z-index: 2; 
+        border-right: 1px solid #eee;
+    }
+
+    .logo-circle {
+        width: 70px; height: 70px; 
+        background: var(--primary); color: white;
+        border-radius: 50%; 
+        display: flex; justify-content: center; align-items: center;
+        font-size: 1.8rem; font-weight: bold; 
+        margin: 0 auto 10px;
+        border: 3px solid #fff; 
+        outline: 2px solid var(--primary); 
+        box-shadow: 0 4px 10px rgba(212,165,165,0.3);
+    }
+
+    h3 { 
+        font-size: 0.9rem; 
+        color: #7f8c8d; 
+        text-transform: uppercase; 
+        letter-spacing: 1px;
+        border-bottom: 1px solid #eee; 
+        padding-bottom: 5px; 
+        margin-top: 20px;
+    }
+
+    .form-group { margin-bottom: 12px; }
+
+    label { 
+        font-size: 0.75rem; 
+        font-weight: 700; 
+        color: #95a5a6; 
+        display: block;
+        margin-bottom: 4px; 
+    }
+
+    input, select { 
+        width: 100%; 
+        padding: 10px; 
+        border: 1px solid #dfe6e9; 
+        border-radius: 6px; 
+        box-sizing: border-box; 
+        font-size: 0.9rem; 
+    }
+
+    input:focus, select:focus { 
+        border-color: var(--primary); 
+        outline: none; 
+        background: #fffafb; 
+    }
+
+    button { 
+        cursor: pointer; 
+        transition: 0.2s; 
+        border: none; 
+        border-radius: 6px; 
+        font-weight: bold; 
+    }
+
+    .btn-lancar { 
+        background: var(--text); 
+        color: white; 
+        padding: 12px; 
+        width: 100%;
+        margin-top: 5px; 
+    }
+    .btn-lancar:hover { background: var(--primary); }
+
+    /* Botão Cancelar Edição (aparece só quando edita) */
+    #btn-cancelar { 
+        background: #95a5a6; 
+        margin-top: 5px; 
+        display: none; 
+    }
+
+    .btn-excel {
+        background: #219150; 
+        color: white; 
+        padding: 10px; 
+        width: 100%; 
+        margin-top: auto;
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        gap: 8px;
+    }
+    .btn-excel:hover { background: #1e8449; }
+
+    /* --- ÁREA PRINCIPAL --- */
+    main { 
+        flex: 1; 
+        padding: 20px; 
+        overflow-y: auto; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 20px; 
+    }
+
+    /* 1. CARDS TOTAIS */
+    .cards-grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px; 
+    }
+
+    .card { 
+        background: white; 
+        padding: 20px; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+        text-align: center; 
+        border-left: 5px solid transparent; 
+    }
+    .card.in { border-left-color: var(--green); }
+    .card.out { border-left-color: var(--red); }
+    .card.bal { border-left-color: var(--blue); }
+    .card .valor { font-size: 1.6rem; font-weight: bold; margin-top: 5px; }
+
+    /* 2. LINHA DO MEIO: CONTAS A PAGAR + TERMÔMETRO */
+    .planning-row { display: flex; gap: 20px; flex-wrap: wrap; }
+
+    /* Box Contas (Esquerda) */
+    .bills-box {
+        flex: 1; min-width: 300px; 
+        background: white; padding: 20px; 
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+        display: flex; flex-direction: column;
+    }
+
+    .bill-input-row { display: flex; gap: 5px; margin-bottom: 10px; }
     
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    .bill-list { 
+        list-style: none; padding: 0; margin: 0; 
+        flex: 1; overflow-y: auto; max-height: 160px; 
+    }
 
-    <style>
-        :root {
-            --primary: #d4a5a5; /* Rose Gold */
-            --primary-dark: #b58585;
-            --bg: #f4f7f6;
-            --white: #ffffff;
-            --text: #2c3e50;
-            --green: #27ae60;
-            --red: #c0392b;
-            --blue: #2980b9;
-            --orange: #e67e22;
-        }
+    .bill-item {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 8px; border-bottom: 1px solid #f1f2f6; font-size: 0.9rem;
+    }
 
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            margin: 0;
-            background-color: var(--bg);
-            color: var(--text);
-            display: flex;
-            min-height: 100vh;
-        }
+    .btn-pay { 
+        background: var(--green); color: white; 
+        padding: 4px 8px; font-size: 0.7rem;
+        margin-left: 10px; border-radius: 4px; 
+    }
+    
+    .btn-del-mini { 
+        background: #ff7675; color: white; width: 20px; height: 20px;
+        border-radius: 50%; font-size: 0.7rem; line-height: 20px; padding: 0; 
+    }
+    
+    /* Botão Editar Mini */
+    .btn-edit-mini {
+        background: var(--orange); color: white; width: 24px; height: 24px;
+        border-radius: 4px; font-size: 0.8rem; margin-right: 5px; cursor: pointer;
+    }
 
-        /* --- MENU LATERAL (Igual ao seu original) --- */
-        aside {
-            width: 310px; /* Largura original do seu arquivo */
-            background: var(--white);
-            padding: 20px;
-            box-shadow: 2px 0 15px rgba(0,0,0,0.05);
-            display: none; 
-            flex-direction: column;
-            position: fixed;
-            height: 100%;
-            z-index: 100;
-            border-right: 1px solid #eee;
-        }
+    /* Box Termômetro (Direita) */
+    .goal-box {
+        flex: 1; min-width: 300px; 
+        background: white; padding: 20px; 
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+        display: flex; flex-direction: column;
+        justify-content: center; text-align: center;
+    }
 
-        @media (min-width: 768px) {
-            aside { display: flex; position: relative; }
-        }
+    .progress-container {
+        height: 25px; background: #dfe6e9; 
+        border-radius: 15px; overflow: hidden; 
+        position: relative; margin: 15px 0;
+    }
 
-        .logo-area {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .logo-circle {
-            width: 70px;
-            height: 70px;
-            background: var(--primary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 10px;
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
-        }
+    .progress-bar {
+        height: 100%; 
+        background: linear-gradient(90deg, var(--orange), var(--green));
+        width: 0%; transition: width 1s ease-in-out;
+    }
 
-        nav button {
-            background: none;
-            border: none;
-            width: 100%;
-            padding: 15px;
-            text-align: left;
-            cursor: pointer;
-            color: var(--text);
-            font-size: 16px;
-            border-radius: 8px;
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 5px;
-        }
+    .progress-text {
+        position: absolute; width: 100%; top: 4px; 
+        font-size: 0.8rem; font-weight: bold; color: #2d3436; 
+        text-shadow: 0 0 2px rgba(255,255,255,0.8);
+    }
 
-        nav button:hover, nav button.active {
-            background-color: var(--primary);
-            color: white;
-        }
+    /* 3. GRÁFICOS */
+    .charts-row { display: flex; gap: 20px; flex-wrap: wrap; }
 
-        /* --- CONTEÚDO PRINCIPAL --- */
-        main {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            width: 100%;
-        }
+    .chart-card {
+        flex: 1; min-width: 300px; 
+        background: white; padding: 20px; 
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+        height: 320px;
+    }
 
-        h2 { border-bottom: 2px solid var(--primary); padding-bottom: 10px; color: var(--primary-dark); }
+    /* 4. TABELA */
+    .table-box { 
+        background: white; padding: 20px; 
+        border-radius: 12px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02); 
+    }
 
-        /* CARDS DE RESUMO */
-        .cards-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
+    table { width: 100%; border-collapse: collapse; }
+    
+    th { 
+        text-align: left; color: #b2bec3; 
+        font-size: 0.8rem; padding-bottom: 10px;
+        border-bottom: 2px solid #eee; 
+    }
+    
+    td { padding: 10px 0; border-bottom: 1px solid #f9f9f9; font-size: 0.9rem; }
 
-        .card {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            text-align: center;
-        }
+    .tag { padding: 3px 8px; border-radius: 10px; font-size: 0.75rem; font-weight: bold; }
+    .tag.servico { background: #e3f2fd; color: #2196f3; }
+    .tag.fixo { background: #ffebee; color: #c0392b; }
+    .tag.material { background: #fff3e0; color: #e67e22; }
 
-        .card h3 { margin: 0; font-size: 14px; color: #7f8c8d; }
-        .card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--primary-dark); }
-        
-        /* FORMULÁRIO */
-        .form-box {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: 500; }
-        
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        button.btn-save {
-            width: 100%;
-            padding: 15px;
-            background-color: var(--green);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-        
-        /* Estilo Botão de Edição */
-        button.btn-update { background-color: var(--orange) !important; }
-
-        /* LISTA DE EXTRATO */
-        .transacao-item {
-            background: var(--white);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-left: 5px solid #ccc;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-        }
-
-        .transacao-item.receita { border-left-color: var(--green); }
-        .transacao-item.despesa { border-left-color: var(--red); }
-
-        .info h4 { margin: 0; font-size: 16px; }
-        .info span { font-size: 12px; color: #7f8c8d; }
-        
-        .valores { text-align: right; }
-        .valores p { margin: 0; font-weight: bold; }
-        
-        .acoes {
-            display: flex;
-            gap: 15px;
-            margin-left: 10px;
-            justify-content: flex-end;
-            margin-top: 5px;
-        }
-
-        .btn-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
-            padding: 0;
-            transition: 0.2s;
-        }
-        .btn-icon.edit { color: var(--orange); }
-        .btn-icon.del { color: var(--red); }
-
-        /* GRÁFICOS */
-        .chart-container {
-            background: var(--white);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            height: 300px;
-        }
-    </style>
+    @media (max-width: 800px) {
+        body { flex-direction: column; overflow-y: auto; height: auto; }
+        aside { width: 100%; box-sizing: border-box; }
+        .charts-row, .planning-row { flex-direction: column; }
+    }
+</style>
 </head>
 <body>
 
-    <aside>
-        <div class="logo-area">
-            <div class="logo-circle">LS</div>
-            <h3>Lash System</h3>
-        </div>
-        <nav>
-            <button onclick="mostrarTela('dashboard')" class="active" id="nav-dash"><i class="fas fa-home"></i> Visão Geral</button>
-            <button onclick="mostrarTela('lancamentos')" id="nav-lanc"><i class="fas fa-plus-circle"></i> Lançamentos</button>
-            <button onclick="mostrarTela('relatorios')" id="nav-rel"><i class="fas fa-chart-pie"></i> Relatórios</button>
-        </nav>
-    </aside>
+<aside>
+    <div class="logo-circle">LS</div>
+    <div style="text-align:center; color:var(--primary); margin-bottom:10px;"><b>LS Cilios</b></div>
 
-    <main id="dashboard-screen">
-        <h2>📊 Visão Geral</h2>
+    <h3>⚡ Novo Lançamento</h3>
+    <div class="form-group">
+        <label>Descrição</label>
+        <input type="text" id="desc" placeholder="Ex: Manutenção...">
+    </div>
+    
+    <div class="form-group">
+        <label>Tipo</label>
+        <select id="tipo" onchange="toggleCliente()">
+            <option value="entrada">💰 Entrada (Ganho)</option>
+            <option value="saida">💸 Saída (Gasto)</option>
+        </select>
+    </div>
+
+    <div class="form-group" id="box-cliente">
+        <label>Cliente</label>
+        <div style="display:flex; gap:5px;">
+            <select id="selCliente"><option value="">Avulso</option></select>
+            <button onclick="addCliente()" style="background:var(--primary); color:white; width:35px;">+</button>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Categoria</label>
+        <select id="cat">
+            <option value="Serviço">Serviço</option>
+            <option value="Material">Material</option>
+            <option value="Fixo">Custo Fixo (Aluguel/Luz)</option>
+            <option value="Pessoal">Pessoal / Salário</option>
+            <option value="Outros">Outros</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Valor (R$)</label>
+        <input type="number" id="valor" step="0.01">
+    </div>
+
+    <button class="btn-lancar" id="btn-lancar" onclick="lancarCaixa()">REGISTRAR</button>
+    <button class="btn-lancar" id="btn-cancelar" onclick="cancelarEdicao()">CANCELAR EDIÇÃO</button>
+
+    <button class="btn-excel" onclick="exportarExcel()">
+        📥 Baixar Excel
+    </button>
+    
+    <p style="text-align:center; margin-top:10px;">
+        <a href="#" onclick="limparTudo()" style="color:#ccc; font-size:0.75rem; text-decoration:none;">Resetar Sistema</a>
+    </p>
+</aside>
+
+<main>
+    <div class="cards-grid">
+        <div class="card in">
+            <span style="color:var(--green); font-size:0.8rem; font-weight:bold;">FATURAMENTO</span>
+            <div class="valor" id="v-entrada">R$ 0,00</div>
+        </div>
+        <div class="card out">
+            <span style="color:var(--red); font-size:0.8rem; font-weight:bold;">DESPESAS TOTAIS</span>
+            <div class="valor" id="v-saida">R$ 0,00</div>
+        </div>
+        <div class="card bal">
+            <span style="color:var(--blue); font-size:0.8rem; font-weight:bold;">SALDO LÍQUIDO</span>
+            <div class="valor" id="v-saldo">R$ 0,00</div>
+        </div>
+    </div>
+
+    <div class="planning-row">
+        <div class="bills-box">
+            <h3 style="margin-top:0; color:var(--text)">📅 Contas a Pagar (Futuro)</h3>
+            <div class="bill-input-row">
+                <input type="text" id="contaDesc" placeholder="Conta (Ex: Aluguel)" style="flex:2">
+                <input type="number" id="contaValor" placeholder="Valor" style="flex:1">
+                <button onclick="addConta()" style="background:var(--text); color:white; width:30px;">+</button>
+            </div>
+            <ul id="lista-contas" class="bill-list"></ul>
+        </div>
+
+        <div class="goal-box">
+            <h3 style="margin-top:0; color:var(--text)">🌡 Cobertura de Custos Fixos</h3>
+            <p style="font-size:0.8rem; color:#888; margin:0;">Quanto do faturamento cobre suas contas fixas.</p>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="barra-progresso"></div>
+                <div class="progress-text" id="texto-progresso">0%</div>
+            </div>
+            
+            <div id="msg-meta" style="font-weight:bold; font-size:0.9rem; color:var(--primary);">
+                Aguardando dados...
+            </div>
+        </div>
+    </div>
+    
+    <div style="font-size:0.8rem; color:#aaa; margin-top:5px;">
+        Meta (Contas Cadastradas): <span id="valor-meta">R$ 0,00</span>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-card">
+            <h3 style="margin-top:0; text-align:center;">🍕 Para onde vai o dinheiro?</h3>
+            <div style="height:250px; position:relative;">
+                <canvas id="chartPizza"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3 style="margin-top:0; text-align:center;">🏆 Top 5 Clientes</h3>
+            <div style="height:250px; position:relative;">
+                <canvas id="chartBarra"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-box">
+        <h3>Extrato Financeiro</h3>
+        <table id="tabela">
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Valor</th>
+                    <th style="text-align:right;">Ações</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</main>
+
+<script>
+// --- DADOS (Mesmas chaves para não perder o que já foi salvo) ---
+let transacoes = JSON.parse(localStorage.getItem('ls_final_trans')) || [];
+let contas = JSON.parse(localStorage.getItem('ls_final_contas')) || [];
+let clientes = JSON.parse(localStorage.getItem('ls_final_clientes')) || [];
+
+// Variável para controlar edição
+let idEdicao = null;
+
+let chartP = null;
+let chartB = null;
+
+// --- INICIALIZAÇÃO ---
+window.onload = function() {
+    atualizarSelectClientes();
+    renderizarContas();
+    atualizarTela();
+};
+
+// --- FUNÇÕES DE LANÇAMENTO (CAIXA) ---
+function lancarCaixa() {
+    let desc = document.getElementById('desc').value;
+    let tipo = document.getElementById('tipo').value;
+    let valor = parseFloat(document.getElementById('valor').value);
+    let cat = document.getElementById('cat').value;
+    let cli = document.getElementById('selCliente').value;
+
+    if(!desc || isNaN(valor)) { alert("Preencha descrição e valor!"); return; }
+    if(tipo === 'saida') cli = '';
+
+    if (idEdicao) {
+        // --- MODO EDIÇÃO ---
+        let index = transacoes.findIndex(t => t.id === idEdicao);
+        if (index !== -1) {
+            transacoes[index] = { 
+                id: idEdicao, 
+                data: transacoes[index].data, 
+                desc, tipo, valor, cat, cliente: cli 
+            };
+            alert("Atualizado com sucesso!");
+        }
+    } else {
+        // --- MODO NOVO ---
+        transacoes.push({ 
+            id: Date.now(), 
+            data: new Date().toLocaleDateString('pt-BR'), 
+            desc, tipo, valor, cat, cliente: cli 
+        });
+    }
+
+    salvar();
+    atualizarTela();
+    cancelarEdicao(); // Limpa e reseta
+}
+
+// FUNÇÃO NOVA: Editar
+function editarTransacao(id) {
+    let t = transacoes.find(x => x.id === id);
+    if(!t) return;
+
+    // Preenche campos
+    document.getElementById('desc').value = t.desc;
+    document.getElementById('valor').value = t.valor;
+    document.getElementById('tipo').value = t.tipo;
+    document.getElementById('cat').value = t.cat;
+    
+    toggleCliente();
+    if(t.tipo === 'entrada') {
+        document.getElementById('selCliente').value = t.cliente || "";
+    }
+
+    // Ajusta Visual
+    idEdicao = id;
+    let btn = document.getElementById('btn-lancar');
+    btn.innerText = "SALVAR ALTERAÇÃO 📝";
+    btn.style.backgroundColor = "#e67e22"; // Laranja
+    document.getElementById('btn-cancelar').style.display = 'block';
+
+    // Rola para o menu (Mobile)
+    document.querySelector('aside').scrollTop = 0;
+}
+
+function cancelarEdicao() {
+    document.getElementById('desc').value = '';
+    document.getElementById('valor').value = '';
+    document.getElementById('selCliente').value = '';
+    
+    idEdicao = null;
+    let btn = document.getElementById('btn-lancar');
+    btn.innerText = "REGISTRAR";
+    btn.style.backgroundColor = ""; 
+    document.getElementById('btn-cancelar').style.display = 'none';
+}
+
+function deletar(id) {
+    if(confirm("Apagar este lançamento?")) {
+        transacoes = transacoes.filter(t => t.id !== id);
+        if(idEdicao === id) cancelarEdicao();
+        salvar();
+        atualizarTela();
+    }
+}
+
+// --- FUNÇÕES DE CONTAS A PAGAR (FUTURO) ---
+function addConta() {
+    let desc = document.getElementById('contaDesc').value;
+    let valor = parseFloat(document.getElementById('contaValor').value);
+    if(!desc || isNaN(valor)) { alert("Preencha a conta e o valor!"); return; }
+
+    contas.push({ id: Date.now(), desc, valor });
+    salvar();
+    renderizarContas();
+    atualizarTela();
+    
+    document.getElementById('contaDesc').value = '';
+    document.getElementById('contaValor').value = '';
+}
+
+function pagarConta(id) {
+    let conta = contas.find(c => c.id === id);
+    if(confirm(`Confirmar pagamento de ${conta.desc}?`)) {
+        // Lança no caixa como saída
+        transacoes.push({
+            id: Date.now(),
+            data: new Date().toLocaleDateString('pt-BR'),
+            desc: conta.desc,
+            tipo: 'saida',
+            valor: conta.valor,
+            cat: 'Fixo',
+            cliente: ''
+        });
+        // Remove da lista de pendentes
+        contas = contas.filter(c => c.id !== id);
+        salvar();
+        renderizarContas();
+        atualizarTela();
+    }
+}
+
+function removerConta(id) {
+    if(confirm("Excluir conta pendente?")) {
+        contas = contas.filter(c => c.id !== id);
+        salvar();
+        renderizarContas();
+        atualizarTela();
+    }
+}
+
+function renderizarContas() {
+    const lista = document.getElementById('lista-contas');
+    lista.innerHTML = '';
+    contas.forEach(c => {
+        let li = document.createElement('li');
+        li.className = 'bill-item';
+        li.innerHTML = `
+            <span><b>${c.desc}</b> <br> R$ ${c.valor.toFixed(2)}</span>
+            <div>
+                <button class="btn-del-mini" onclick="removerConta(${c.id})">x</button>
+                <button class="btn-pay" onclick="pagarConta(${c.id})">✅ Pagar</button>
+            </div>
+        `;
+        lista.appendChild(li);
+    });
+}
+
+// --- FUNÇÕES DE CLIENTES ---
+function addCliente() {
+    let nome = prompt("Nome da Cliente:");
+    if(nome) {
+        clientes.push(nome);
+        clientes.sort();
+        salvar();
+        atualizarSelectClientes();
+        document.getElementById('selCliente').value = nome;
+    }
+}
+
+function atualizarSelectClientes() {
+    let sel = document.getElementById('selCliente');
+    sel.innerHTML = '<option value="">Avulso</option>';
+    clientes.forEach(c => {
+        let opt = document.createElement('option');
+        opt.value = c; opt.innerText = c;
+        sel.appendChild(opt);
+    });
+}
+
+function toggleCliente() {
+    let tipo = document.getElementById('tipo').value;
+    document.getElementById('box-cliente').style.display = (tipo === 'entrada') ? 'block' : 'none';
+}
+
+// --- EXCEL ---
+function exportarExcel() {
+    let csv = 'Data;Descricao;Tipo;Categoria;Valor;Cliente\n';
+    transacoes.forEach(t => {
+        csv += `${t.data};${t.desc};${t.tipo};${t.cat};${t.valor.toString().replace('.', ',')};${t.cliente}\n`;
+    });
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let url = URL.createObjectURL(blob);
+    let link = document.createElement("a");
+    link.href = url;
+    link.download = "LSCilios_Financeiro.csv";
+    link.click();
+}
+
+// --- ATUALIZAÇÃO GERAL E GRÁFICOS ---
+function atualizarTela() {
+    const tbody = document.querySelector('#tabela tbody');
+    tbody.innerHTML = '';
+    
+    let ent = 0, sai = 0;
+    let gastosPorCat = {};
+    let rankingCli = {};
+
+    // Processar transações
+    transacoes.sort((a,b) => b.id - a.id).forEach(t => {
+        if(t.tipo === 'entrada') {
+            ent += t.valor;
+            if(t.cliente) rankingCli[t.cliente] = (rankingCli[t.cliente] || 0) + t.valor;
+        } else {
+            sai += t.valor;
+            gastosPorCat[t.cat] = (gastosPorCat[t.cat] || 0) + t.valor;
+        }
+
+        // Tabela com Botão EDITAR
+        let tr = document.createElement('tr');
+        let tagClass = t.cat.toLowerCase();
+        if(!['serviço', 'material', 'fixo'].includes(tagClass)) tagClass = '';
         
-        <div class="cards-container">
-            <div class="card">
-                <h3>Receitas (Total)</h3>
-                <p style="color: var(--green);" id="dash-receitas">R$ 0,00</p>
-            </div>
-            <div class="card">
-                <h3>Despesas (Total)</h3>
-                <p style="color: var(--red);" id="dash-despesas">R$ 0,00</p>
-            </div>
-            <div class="card">
-                <h3>Saldo Atual</h3>
-                <p id="dash-saldo">R$ 0,00</p>
-            </div>
-        </div>
+        tr.innerHTML = `
+            <td><b>${t.desc}</b><br><small style="color:#aaa">${t.data}</small></td>
+            <td><span class="tag ${tagClass}">${t.cat}</span></td>
+            <td style="color:${t.tipo==='entrada'?'var(--green)':'var(--red)'}">R$ ${t.valor.toFixed(2)}</td>
+            <td style="text-align:right">
+                <button class="btn-edit-mini" onclick="editarTransacao(${t.id})">✎</button>
+                <button class="btn-del-mini" onclick="deletar(${t.id})">x</button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
 
-        <div style="margin-top: 30px;">
-            <h3>Últimos Lançamentos</h3>
-            <div id="lista-dashboard"></div>
-        </div>
-    </main>
+    // Totais
+    document.getElementById('v-entrada').innerText = `R$ ${ent.toFixed(2)}`;
+    document.getElementById('v-saida').innerText = `R$ ${sai.toFixed(2)}`;
+    document.getElementById('v-saldo').innerText = `R$ ${(ent-sai).toFixed(2)}`;
 
-    <main id="lancamentos-screen" style="display:none;">
-        <h2>📝 Gerenciar Lançamentos</h2>
-        
-        <div class="form-box">
-            <input type="hidden" id="edit-id">
-            
-            <div class="form-group">
-                <label>Tipo:</label>
-                <select id="tipo">
-                    <option value="receita">Entrada (Receita)</option>
-                    <option value="despesa">Saída (Despesa)</option>
-                </select>
-            </div>
+    // LÓGICA DO TERMÔMETRO (META)
+    let totalFixoPago = transacoes.filter(t => t.cat === 'Fixo' && t.tipo === 'saida').reduce((acc, t) => acc + t.valor, 0);
+    let totalPendente = contas.reduce((acc, c) => acc + c.valor, 0);
+    let metaTotal = totalFixoPago + totalPendente;
 
-            <div class="form-group">
-                <label>Descrição:</label>
-                <input type="text" id="descricao" placeholder="Ex: Cílios Híbrido - Maria">
-            </div>
+    document.getElementById('valor-meta').innerText = `R$ ${metaTotal.toFixed(2)}`;
 
-            <div class="form-group">
-                <label>Valor (R$):</label>
-                <input type="number" id="valor" step="0.01" placeholder="0.00">
-            </div>
+    if(metaTotal > 0) {
+        let cobrindo = ent;
+        let porc = (cobrindo / metaTotal) * 100;
+        if(porc > 100) porc = 100;
 
-            <div class="form-group">
-                <label>Categoria:</label>
-                <select id="categoria">
-                    <option value="Serviço">Serviço</option>
-                    <option value="Material">Material</option>
-                    <option value="Aluguel/Contas">Aluguel/Contas Fixas</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Pessoal">Retirada Pessoal</option>
-                    <option value="Outros">Outros</option>
-                </select>
-            </div>
+        document.getElementById('barra-progresso').style.width = `${porc}%`;
+        document.getElementById('texto-progresso').innerText = `${porc.toFixed(0)}%`;
 
-            <div class="form-group">
-                <label>Data:</label>
-                <input type="date" id="data">
-            </div>
-
-            <button onclick="salvarTransacao()" id="btn-salvar" class="btn-save">Adicionar Lançamento</button>
-            <button onclick="cancelarEdicao()" id="btn-cancelar" style="display:none; width:100%; margin-top:10px; background:#95a5a6; color:white; border:none; padding:10px; border-radius:8px;">Cancelar Edição</button>
-        </div>
-
-        <h3>Histórico Completo</h3>
-        <div id="lista-completa"></div>
-    </main>
-
-    <main id="relatorios-screen" style="display:none;">
-        <h2>📈 Relatórios</h2>
-        <div class="chart-container">
-            <canvas id="chartPizza"></canvas>
-        </div>
-        <div class="chart-container">
-            <canvas id="chartBarra"></canvas>
-        </div>
-    </main>
-
-    <script>
-        // --- CONFIGURAÇÃO ---
-        const DB_KEY = 'lscilios_db'; // Mantém o mesmo nome para não perder dados
-        let transacoes = JSON.parse(localStorage.getItem(DB_KEY)) || [];
-
-        window.onload = () => {
-            document.getElementById('data').valueAsDate = new Date();
-            atualizarInterface();
-        };
-
-        // --- NAVEGAÇÃO ---
-        function mostrarTela(telaId) {
-            document.querySelectorAll('main').forEach(m => m.style.display = 'none');
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-
-            if(telaId === 'dashboard') {
-                document.getElementById('dashboard-screen').style.display = 'block';
-                document.getElementById('nav-dash').classList.add('active');
-            } else if(telaId === 'lancamentos') {
-                document.getElementById('lancamentos-screen').style.display = 'block';
-                document.getElementById('nav-lanc').classList.add('active');
-            } else {
-                document.getElementById('relatorios-screen').style.display = 'block';
-                document.getElementById('nav-rel').classList.add('active');
-                renderizarGraficos();
-            }
+        let falta = metaTotal - cobrindo;
+        if(falta > 0) {
+            document.getElementById('msg-meta').innerHTML = `Falta <span style="color:var(--red)">R$ ${falta.toFixed(2)}</span> p/ cobrir custos fixos!`;
+            document.getElementById('barra-progresso').style.background = "linear-gradient(90deg, var(--orange), var(--green))";
+        } else {
+            document.getElementById('msg-meta').innerHTML = `🎉 Custos Fixos Cobertos!`;
+            document.getElementById('barra-progresso').style.background = "var(--green)";
         }
+    } else {
+        document.getElementById('barra-progresso').style.width = "0%";
+        document.getElementById('msg-meta').innerText = "Cadastre contas para ver a meta.";
+    }
 
-        // --- LÓGICA DE SALVAR E EDITAR ---
-        function salvarTransacao() {
-            const idEdit = document.getElementById('edit-id').value;
-            const tipo = document.getElementById('tipo').value;
-            const descricao = document.getElementById('descricao').value;
-            const valor = parseFloat(document.getElementById('valor').value);
-            const categoria = document.getElementById('categoria').value;
-            const data = document.getElementById('data').value;
+    atualizarGraficos(gastosPorCat, rankingCli);
+}
 
-            if (!descricao || isNaN(valor)) {
-                alert("Preencha descrição e valor!");
-                return;
-            }
+function atualizarGraficos(gastos, clientesObj) {
+    // Pizza
+    const ctxP = document.getElementById('chartPizza').getContext('2d');
+    if(chartP) chartP.destroy();
+    chartP = new Chart(ctxP, {
+        type: 'doughnut',
+        data: {
+            labels: Object.keys(gastos),
+            datasets: [{
+                data: Object.values(gastos),
+                backgroundColor: ['#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#95a5a6']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }}}
+    });
 
-            if (idEdit) {
-                // MODO EDIÇÃO
-                const index = transacoes.findIndex(t => t.id == idEdit);
-                if (index !== -1) {
-                    transacoes[index] = { id: parseInt(idEdit), tipo, descricao, valor, categoria, data };
-                    alert("Registro atualizado com sucesso! ✅");
-                }
-            } else {
-                // MODO CRIAÇÃO
-                const novaTransacao = {
-                    id: Date.now(),
-                    tipo,
-                    descricao,
-                    valor,
-                    categoria,
-                    data
-                };
-                transacoes.push(novaTransacao);
-                alert("Lançamento salvo! 💾");
-            }
+    // Barras
+    const ctxB = document.getElementById('chartBarra').getContext('2d');
+    if(chartB) chartB.destroy();
+    
+    // Top 5 Clientes
+    let sortedCli = Object.entries(clientesObj).sort((a,b) => b[1] - a[1]).slice(0, 5);
 
-            salvarNoCelular();
-            limparFormulario();
-            atualizarInterface();
-        }
+    chartB = new Chart(ctxB, {
+        type: 'bar',
+        data: {
+            labels: sortedCli.map(i => i[0]), 
+            datasets: [{
+                label: 'Gasto Total',
+                data: sortedCli.map(i => i[1]), 
+                backgroundColor: '#d4a5a5'
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }}}
+    });
+}
 
-        // --- FUNÇÃO PARA EDITAR (O BOTÃO LÁPIS) ---
-        function editarItem(id) {
-            const item = transacoes.find(t => t.id === id);
-            if (!item) return;
+function salvar() {
+    localStorage.setItem('ls_final_trans', JSON.stringify(transacoes));
+    localStorage.setItem('ls_final_contas', JSON.stringify(contas));
+    localStorage.setItem('ls_final_clientes', JSON.stringify(clientes));
+}
 
-            // Vai para tela de lançamentos
-            mostrarTela('lancamentos');
-
-            // Preenche tudo
-            document.getElementById('edit-id').value = item.id;
-            document.getElementById('tipo').value = item.tipo;
-            document.getElementById('descricao').value = item.descricao;
-            document.getElementById('valor').value = item.valor;
-            document.getElementById('categoria').value = item.categoria;
-            document.getElementById('data').value = item.data;
-
-            // Muda o botão para "Atualizar"
-            const btn = document.getElementById('btn-salvar');
-            btn.innerText = "🔄 Atualizar Lançamento";
-            btn.classList.add('btn-update');
-            document.getElementById('btn-cancelar').style.display = 'block';
-
-            // Rola para o topo
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function cancelarEdicao() {
-            limparFormulario();
-        }
-
-        function excluirItem(id) {
-            if (confirm("Deseja realmente apagar este registro?")) {
-                transacoes = transacoes.filter(t => t.id !== id);
-                salvarNoCelular();
-                atualizarInterface();
-            }
-        }
-
-        function limparFormulario() {
-            document.getElementById('edit-id').value = '';
-            document.getElementById('descricao').value = '';
-            document.getElementById('valor').value = '';
-            document.getElementById('data').valueAsDate = new Date();
-            
-            const btn = document.getElementById('btn-salvar');
-            btn.innerText = "Adicionar Lançamento";
-            btn.classList.remove('btn-update');
-            document.getElementById('btn-cancelar').style.display = 'none';
-        }
-
-        function salvarNoCelular() {
-            localStorage.setItem(DB_KEY, JSON.stringify(transacoes));
-        }
-
-        // --- RENDERIZAÇÃO NA TELA ---
-        function atualizarInterface() {
-            const listaDash = document.getElementById('lista-dashboard');
-            const listaComp = document.getElementById('lista-completa');
-            
-            listaDash.innerHTML = '';
-            listaComp.innerHTML = '';
-
-            let totalRec = 0;
-            let totalDesp = 0;
-
-            // Ordena por data (mais novo primeiro)
-            const ordenadas = [...transacoes].sort((a, b) => new Date(b.data) - new Date(a.data));
-
-            ordenadas.forEach((t, index) => {
-                if (t.tipo === 'receita') totalRec += t.valor;
-                else totalDesp += t.valor;
-
-                const htmlItem = `
-                    <div class="transacao-item ${t.tipo}">
-                        <div class="info">
-                            <h4>${t.descricao}</h4>
-                            <span>${new Date(t.data).toLocaleDateString('pt-BR')} • ${t.categoria}</span>
-                        </div>
-                        <div class="valores">
-                            <p>R$ ${t.valor.toFixed(2)}</p>
-                            <div class="acoes">
-                                <button class="btn-icon edit" onclick="editarItem(${t.id})" title="Editar">
-                                    <i class="fas fa-pen"></i>
-                                </button>
-                                <button class="btn-icon del" onclick="excluirItem(${t.id})" title="Excluir">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                listaComp.innerHTML += htmlItem;
-                if (index < 5) listaDash.innerHTML += htmlItem;
-            });
-
-            document.getElementById('dash-receitas').innerText = `R$ ${totalRec.toFixed(2)}`;
-            document.getElementById('dash-despesas').innerText = `R$ ${totalDesp.toFixed(2)}`;
-            document.getElementById('dash-saldo').innerText = `R$ ${(totalRec - totalDesp).toFixed(2)}`;
-        }
-
-        // --- GRÁFICOS (CORES ORIGINAIS) ---
-        let chartPizza = null;
-        let chartBarra = null;
-
-        function renderizarGraficos() {
-            const categorias = {};
-            transacoes.forEach(t => {
-                if(t.tipo === 'despesa') {
-                    categorias[t.categoria] = (categorias[t.categoria] || 0) + t.valor;
-                }
-            });
-
-            const ctxP = document.getElementById('chartPizza').getContext('2d');
-            if(chartPizza) chartPizza.destroy();
-            
-            chartPizza = new Chart(ctxP, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(categorias),
-                    datasets: [{
-                        data: Object.values(categorias),
-                        // Cores originais do seu PDF
-                        backgroundColor: ['#e74c3c', '#3498db', '#f1c40f', '#9b59b6', '#95a5a6']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Despesas por Categoria' } }
-                }
-            });
-
-            // Gráfico de Barras (Receita vs Despesa)
-            let recTotal = 0, despTotal = 0;
-            transacoes.forEach(t => t.tipo === 'receita' ? recTotal += t.valor : despTotal += t.valor);
-
-            const ctxB = document.getElementById('chartBarra').getContext('2d');
-            if(chartBarra) chartBarra.destroy();
-
-            chartBarra = new Chart(ctxB, {
-                type: 'bar',
-                data: {
-                    labels: ['Receitas', 'Despesas'],
-                    datasets: [{
-                        label: 'Financeiro',
-                        data: [recTotal, despTotal],
-                        backgroundColor: ['#27ae60', '#c0392b']
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false }
-            });
-        }
-    </script>
+function limparTudo() {
+    if(confirm("ATENÇÃO: Isso apaga todos os dados. Continuar?")) {
+        localStorage.clear();
+        location.reload();
+    }
+}
+</script>
 </body>
 </html>
