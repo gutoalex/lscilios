@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -203,6 +203,26 @@
         </div>
     </div>
 
+    <!-- MODAL CADASTRO RÁPIDO DE CLIENTE -->
+    <div id="modal-cliente-rapido" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top:0; color:var(--text)">👩 Nova Cliente</h3>
+            <p style="font-size:0.8rem; color:#777; margin-bottom:15px">Cadastre rapidamente para lançar o procedimento.</p>
+            <div class="form-group" style="text-align:left">
+                <label>Nome da Cliente *</label>
+                <input type="text" id="quickCliNome" placeholder="Ex: Ana Souza">
+            </div>
+            <div class="form-group" style="text-align:left">
+                <label>WhatsApp / Telefone (Opcional)</label>
+                <input type="text" id="quickCliTel" placeholder="Ex: 11999999999">
+            </div>
+            <div class="modal-btns" style="margin-top:20px">
+                <button class="modal-btn cancel" onclick="window.fecharModalClienteRapido()">Cancelar</button>
+                <button class="modal-btn confirm" onclick="window.salvarClienteRapido()">Adicionar</button>
+            </div>
+        </div>
+    </div>
+
     <aside>
         <div class="topo-aside">
             <button class="btn-theme" onclick="window.toggleDarkMode()" title="Modo Escuro">🌙</button>
@@ -222,7 +242,7 @@
         </div>
         <div class="form-group">
             <label>Tipo</label>
-            <select id="tipo" onchange="window.toggleCliente()">
+            <select id="tipo" onchange="window.toggleTipo()">
                 <option value="entrada">💰 Entrada (Ganho)</option>
                 <option value="saida">💸 Saída (Gasto)</option>
             </select>
@@ -231,21 +251,30 @@
         <div class="form-group" id="box-cliente">
             <label>Cliente</label>
             <div style="display:flex; gap:5px;">
-                <select id="selCliente"><option value="">Avulso</option></select>
-                <button onclick="window.irParaClientes()" style="background:var(--primary); color:white; width:40px;" title="Adicionar Cliente">👥</button>
+                <select id="selCliente" onchange="window.onSelectClienteChange()"><option value="">Avulso</option></select>
+                <button onclick="window.irParaClientes()" style="background:var(--primary); color:white; width:40px;" title="Ir para aba de Clientes">👥</button>
             </div>
         </div>
 
         <div class="form-group">
             <label>Categoria</label>
-            <select id="cat">
+            <select id="cat" onchange="window.toggleForm()">
                 <option value="Serviço">Serviço</option>
                 <option value="Material">Material</option>
                 <option value="Fixo">Custo Fixo (Aluguel/Luz)</option>
+                <option value="Conta">🧾 Baixar Conta Pendente</option>
                 <option value="Pessoal">Pessoal / Salário</option>
                 <option value="Outros">Outros</option>
             </select>
         </div>
+
+        <div class="form-group" id="box-conta-pendente" style="display:none;">
+            <label>Qual Conta Pendente?</label>
+            <select id="selContaPendente" onchange="window.preencherValorConta()">
+                <option value="">Selecione...</option>
+            </select>
+        </div>
+
         <div class="form-group">
             <label>Valor (R$)</label>
             <input type="number" id="valor" step="0.01">
@@ -327,6 +356,16 @@
                         <div class="progress-text" id="texto-progresso">0%</div>
                     </div>
                     <div id="msg-meta" style="font-weight:bold; font-size:0.8rem; color:var(--primary); text-align:center;">Aguardando...</div>
+
+                    <!-- Status das Contas a Pagar -->
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
+                        <span style="font-size:0.8rem; font-weight:bold;">Contas a Pagar (Pagas vs Total):</span>
+                        <span id="valor-contas-pagas" style="font-size:0.8rem; color:#888;">R$ 0,00 / R$ 0,00</span>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-bar" id="barra-contas-pagas" style="background: linear-gradient(90deg, #e74c3c, #27ae60);"></div>
+                        <div class="progress-text" id="texto-contas-pagas">0%</div>
+                    </div>
                 </div>
             </div>
 
@@ -398,7 +437,7 @@
                 <div class="form-box-side">
                     <h3 id="titulo-form-cli" style="margin-top:0;">📝 Cadastrar Nova Cliente</h3>
                     <div class="form-group"><label>Nome</label><input type="text" id="cliNome" placeholder="Ex: Ana Souza"></div>
-                    <div class="form-group"><label>Telemóvel (WhatsApp)</label><input type="text" id="cliTel" placeholder="Ex: 912345678"></div>
+                    <div class="form-group"><label>WhatsApp / Telefone</label><input type="text" id="cliTel" placeholder="Ex: 11999999999"></div>
                     <div class="form-group"><label>Anotações (Alergias, Preferências)</label><textarea id="cliNotas" rows="4"></textarea></div>
                     <button class="btn-lancar" id="btn-salvar-cli" onclick="window.salvarCliente()">GUARDAR CLIENTE</button>
                 </div>
@@ -516,7 +555,8 @@
             }
 
             window.transacoes = (dados.transacoes || []).map(t => ({...t, data: formatarDataSafe(t.data), valor: parseFloat(t.valor) || 0}));
-            window.contas = (dados.contas || []).map(c => ({...c, valor: parseFloat(c.valor) || 0}));
+            // CORREÇÃO UNDEFINED NAS CONTAS: Lê tanto de c.descricao quanto c.desc (dependendo de como está na planilha)
+            window.contas = (dados.contas || []).map(c => ({...c, desc: c.desc || c.descricao || c.Descricao || '', valor: parseFloat(c.valor) || 0}));
             window.clientes = dados.clientes || [];
 
             mudarStatusPlanilha("🟢 Planilha Sincronizada", "conectado");
@@ -607,116 +647,84 @@
         window.atualizarTelas(); window.mostrarModal("Adicionado com sucesso!");
     }
 
-    // LANÇAMENTOS (CAIXA) E EDIÇÃO
-    window.lancarCaixa = async function() {
-        let dataInput = document.getElementById('dataLancamento').value;
-        let desc = document.getElementById('desc').value;
-        let tipo = document.getElementById('tipo').value;
-        let valor = parseFloat(document.getElementById('valor').value);
-        let cat = document.getElementById('cat').value;
-        let cli = document.getElementById('selCliente').value;
-
-        if(!desc || isNaN(valor)) return window.mostrarModal("Preencha descrição e valor!");
-        if(tipo === 'saida') cli = ''; 
-        let dataBR = dataInput.split('-').reverse().join('/');
-
-        // Se estivermos a editar
-        if (window.editandoTransacaoId) {
-            window.transacoes = window.transacoes.filter(x => x.id != window.editandoTransacaoId);
-            await enviarParaPlanilha("deleteTransacao", { id: window.editandoTransacaoId });
-            window.editandoTransacaoId = null;
-            document.getElementById('btn-lancar-caixa').innerText = "REGISTAR";
-            document.getElementById('titulo-form-lancamento').innerText = "⚡ Novo Lançamento";
+    // NOVO CADASTRO RÁPIDO DE CLIENTE (POP-UP)
+    window.onSelectClienteChange = function() {
+        let sel = document.getElementById('selCliente');
+        if (sel.value === "NOVO_CLIENTE_POPUP") {
+            document.getElementById('modal-cliente-rapido').style.display = 'flex';
         }
+    }
+    window.fecharModalClienteRapido = function() {
+        document.getElementById('modal-cliente-rapido').style.display = 'none';
+        document.getElementById('selCliente').value = ''; // Volta a seleção para Avulso
+    }
+    window.salvarClienteRapido = async function() {
+        let nome = document.getElementById('quickCliNome').value.trim();
+        let tel = document.getElementById('quickCliTel').value.trim();
+        if(!nome) return window.mostrarModal("O nome da cliente é obrigatório!");
 
-        const nova = { id: Date.now().toString(), data: dataBR, desc, tipo, valor, cat, cliente: cli, timestamp: Date.now() };
-        window.transacoes.push(nova);
-        window.atualizarTelas(); window.renderizarListaClientes();
+        const c = { id: Date.now().toString(), nome, telefone: tel, notas: '', timestamp: Date.now() };
+        window.clientes.push(c);
         
-        document.getElementById('desc').value = ''; document.getElementById('valor').value = '';
-        await enviarParaPlanilha("addTransacao", nova);
-    }
-
-    window.editarTransacao = function(id) {
-        let t = window.transacoes.find(x => x.id == id); if(!t) return;
-        document.getElementById('desc').value = t.desc || '';
-        document.getElementById('tipo').value = t.tipo || 'entrada';
-        document.getElementById('valor').value = t.valor || 0;
-        document.getElementById('cat').value = t.cat || 'Outros';
+        window.atualizarSelectClientes();
+        window.renderizarListaClientes();
         
-        if (t.data) {
-            document.getElementById('dataLancamento').value = t.data.split('/').reverse().join('-');
-        }
-        window.toggleCliente();
-        document.getElementById('selCliente').value = t.cliente || '';
-
-        window.editandoTransacaoId = id;
-        document.getElementById('btn-lancar-caixa').innerText = "💾 GUARDAR EDIÇÃO";
-        document.getElementById('titulo-form-lancamento').innerText = "✏️ Editar Lançamento";
-        window.scrollTo(0, 0);
-    }
-
-    window.deletar = function(id) {
-        window.mostrarModal("Apagar lançamento?", true, async () => {
-            window.transacoes = window.transacoes.filter(t => t.id != id); window.atualizarTelas(); window.renderizarListaClientes();
-            await enviarParaPlanilha("deleteTransacao", { id });
-        });
-    }
-
-    // CONTAS
-    window.addConta = async function() {
-        let desc = document.getElementById('contaDesc').value; let valor = parseFloat(document.getElementById('contaValor').value);
-        if(!desc || isNaN(valor)) return window.mostrarModal("Preencha conta e valor!");
-        const c = { id: Date.now().toString(), desc, valor }; window.contas.push(c); window.renderizarContas(); window.atualizarTelas();
-        document.getElementById('contaDesc').value = ''; document.getElementById('contaValor').value = ''; await enviarParaPlanilha("addConta", c);
-    }
-    window.pagarConta = function(id, desc, valor) {
-        window.mostrarModal(`Confirmar pagamento de ${desc}? (Saída Fixa)`, true, async () => {
-            const t = { id: Date.now().toString(), data: new Date().toLocaleDateString('pt-PT'), desc, tipo: 'saida', valor, cat: 'Fixo', cliente: '', timestamp: Date.now() };
-            window.transacoes.push(t); window.contas = window.contas.filter(c => c.id != id); window.renderizarContas(); window.atualizarTelas();
-            await enviarParaPlanilha("deleteConta", { id }); await enviarParaPlanilha("addTransacao", t);
-        });
-    }
-    window.removerConta = function(id) { window.mostrarModal("Excluir pendência?", true, async () => { window.contas = window.contas.filter(c => c.id != id); window.renderizarContas(); window.atualizarTelas(); await enviarParaPlanilha("deleteConta", { id }); }); }
-    window.renderizarContas = function() {
-        const lista = document.getElementById('lista-contas'); lista.innerHTML = '';
-        window.contas.forEach(c => { lista.innerHTML += `<li class="bill-item"><span><b>${c.desc}</b> <br> R$ ${c.valor.toFixed(2)}</span>
-            <div><button class="btn-action-mini btn-del" onclick="window.removerConta('${c.id}')">x</button> <button class="btn-pay" onclick="window.pagarConta('${c.id}', '${c.desc}', ${c.valor})">✅ Pagar</button></div></li>`; });
-    }
-
-    // CLIENTES
-    window.salvarCliente = async function() {
-        let nome = document.getElementById('cliNome').value.trim(); let tel = document.getElementById('cliTel').value.trim(); let notas = document.getElementById('cliNotas').value.trim();
-        if(!nome) return window.mostrarModal("Nome obrigatório!");
-
-        if (window.editandoClienteId) {
-            window.clientes = window.clientes.filter(x => x.id != window.editandoClienteId);
-            await enviarParaPlanilha("deleteCliente", { id: window.editandoClienteId });
-            window.editandoClienteId = null;
-            document.getElementById('btn-salvar-cli').innerText = "GUARDAR CLIENTE";
-            document.getElementById('titulo-form-cli').innerText = "📝 Cadastrar Nova Cliente";
-        }
-
-        const c = { id: Date.now().toString(), nome, telefone: tel, notas, timestamp: Date.now() };
-        window.clientes.push(c); window.atualizarSelectClientes(); window.renderizarListaClientes();
-        document.getElementById('cliNome').value=''; document.getElementById('cliTel').value=''; document.getElementById('cliNotas').value='';
+        // Mantém a cliente criada já selecionada no menu
+        document.getElementById('selCliente').value = nome;
+        
+        document.getElementById('modal-cliente-rapido').style.display = 'none';
+        document.getElementById('quickCliNome').value = '';
+        document.getElementById('quickCliTel').value = '';
+        
         await enviarParaPlanilha("addCliente", c);
     }
-    window.editarCliente = function(id) {
-        let c = window.clientes.find(x => x.id == id); if(!c) return;
-        document.getElementById('cliNome').value = c.nome; document.getElementById('cliTel').value = c.telefone; document.getElementById('cliNotas').value = c.notas;
-        window.editandoClienteId = id; document.getElementById('btn-salvar-cli').innerText = "💾 ATUALIZAR"; document.getElementById('titulo-form-cli').innerText = "✏️ Editar Cliente"; window.scrollTo(0,0);
-    }
-    window.deletarCliente = function(id, nome) { window.mostrarModal(`Apagar cadastro de ${nome}?`, true, async () => { window.clientes = window.clientes.filter(c => c.id != id); window.atualizarSelectClientes(); window.renderizarListaClientes(); await enviarParaPlanilha("deleteCliente", { id }); }); }
-    
+
     window.atualizarSelectClientes = function() { 
         let sel = document.getElementById('selCliente'); sel.innerHTML = '<option value="">Avulso</option>'; 
         [...window.clientes].sort((a,b)=> (a.nome || '').localeCompare(b.nome || '')).forEach(c => {
             if(c.nome) sel.innerHTML += `<option value="${c.nome}">${c.nome}</option>`;
         }); 
+        // Adiciona a opção de criação rápida no final da lista
+        sel.innerHTML += `<option value="NOVO_CLIENTE_POPUP" style="font-weight:bold; color:var(--primary);">➕ Nova Cliente...</option>`;
     }
-    window.toggleCliente = function() { document.getElementById('box-cliente').style.display = (document.getElementById('tipo').value === 'entrada') ? 'block' : 'none'; }
     
+    window.toggleTipo = function() {
+        let tipo = document.getElementById('tipo').value;
+        let catSelect = document.getElementById('cat');
+        if (tipo === 'entrada' && catSelect.value === 'Conta') {
+            catSelect.value = 'Serviço';
+        }
+        window.toggleForm(); 
+    }
+    
+    window.toggleForm = function() {
+        let tipo = document.getElementById('tipo').value;
+        let cat = document.getElementById('cat').value;
+        
+        document.getElementById('box-cliente').style.display = (tipo === 'entrada') ? 'block' : 'none';
+        
+        let boxConta = document.getElementById('box-conta-pendente');
+        if (tipo === 'saida' && cat === 'Conta') {
+            boxConta.style.display = 'block';
+            let sel = document.getElementById('selContaPendente');
+            sel.innerHTML = '<option value="">-- Selecione a conta --</option>';
+            window.contas.forEach(c => {
+                sel.innerHTML += `<option value="${c.id}" data-desc="${c.desc}" data-valor="${c.valor}">${c.desc} (R$ ${c.valor.toFixed(2)})</option>`;
+            });
+        } else {
+            boxConta.style.display = 'none';
+        }
+    }
+    
+    window.preencherValorConta = function() {
+        let sel = document.getElementById('selContaPendente');
+        let opt = sel.options[sel.selectedIndex];
+        if(opt && opt.value) {
+            document.getElementById('desc').value = opt.getAttribute('data-desc');
+            document.getElementById('valor').value = opt.getAttribute('data-valor');
+        }
+    }
+
     window.renderizarListaClientes = function() {
         const grid = document.getElementById('grid-clientes'); grid.innerHTML = '';
         if(window.clientes.length === 0) { grid.innerHTML = '<p style="color:#aaa;">Nenhuma cliente cadastrada.</p>'; return; }
@@ -757,6 +765,126 @@
         });
     }
 
+    // LANÇAMENTOS (CAIXA) E EDIÇÃO
+    window.lancarCaixa = async function() {
+        let dataInput = document.getElementById('dataLancamento').value;
+        let desc = document.getElementById('desc').value;
+        let tipo = document.getElementById('tipo').value;
+        let valor = parseFloat(document.getElementById('valor').value);
+        let cat = document.getElementById('cat').value;
+        let cli = document.getElementById('selCliente').value;
+
+        if(!desc || isNaN(valor)) return window.mostrarModal("Preencha descrição e valor!");
+        if(tipo === 'saida') cli = ''; 
+        let dataBR = dataInput.split('-').reverse().join('/');
+        
+        let idContaPendente = "";
+        if (tipo === 'saida' && cat === 'Conta') {
+            idContaPendente = document.getElementById('selContaPendente').value;
+            if (!idContaPendente) return window.mostrarModal("Selecione qual conta pendente está a pagar!");
+            cat = 'Fixo'; // Transformar em custo fixo para os gráficos
+        }
+
+        // Se estivermos a editar
+        if (window.editandoTransacaoId) {
+            window.transacoes = window.transacoes.filter(x => x.id != window.editandoTransacaoId);
+            await enviarParaPlanilha("deleteTransacao", { id: window.editandoTransacaoId });
+            window.editandoTransacaoId = null;
+            document.getElementById('btn-lancar-caixa').innerText = "REGISTAR";
+            document.getElementById('titulo-form-lancamento').innerText = "⚡ Novo Lançamento";
+        }
+
+        const nova = { id: Date.now().toString(), data: dataBR, desc, tipo, valor, cat, cliente: cli, timestamp: Date.now() };
+        window.transacoes.push(nova);
+        
+        // Se pagou uma conta pendente, remove-a da lista de pendentes automaticamente
+        if (idContaPendente) {
+            window.contas = window.contas.filter(c => c.id != idContaPendente);
+            window.renderizarContas();
+            enviarParaPlanilha("deleteConta", { id: idContaPendente });
+        }
+        
+        window.atualizarTelas(); window.renderizarListaClientes();
+        
+        document.getElementById('desc').value = ''; document.getElementById('valor').value = '';
+        await enviarParaPlanilha("addTransacao", nova);
+    }
+
+    window.editarTransacao = function(id) {
+        let t = window.transacoes.find(x => x.id == id); if(!t) return;
+        document.getElementById('desc').value = t.desc || '';
+        document.getElementById('tipo').value = t.tipo || 'entrada';
+        document.getElementById('valor').value = t.valor || 0;
+        document.getElementById('cat').value = t.cat || 'Outros';
+        
+        if (t.data) {
+            document.getElementById('dataLancamento').value = t.data.split('/').reverse().join('-');
+        }
+        window.toggleTipo();
+        document.getElementById('selCliente').value = t.cliente || '';
+
+        window.editandoTransacaoId = id;
+        document.getElementById('btn-lancar-caixa').innerText = "💾 GUARDAR EDIÇÃO";
+        document.getElementById('titulo-form-lancamento').innerText = "✏️ Editar Lançamento";
+        window.scrollTo(0, 0);
+    }
+
+    window.deletar = function(id) {
+        window.mostrarModal("Apagar lançamento?", true, async () => {
+            window.transacoes = window.transacoes.filter(t => t.id != id); window.atualizarTelas(); window.renderizarListaClientes();
+            await enviarParaPlanilha("deleteTransacao", { id });
+        });
+    }
+
+    // CONTAS
+    window.addConta = async function() {
+        let desc = document.getElementById('contaDesc').value; let valor = parseFloat(document.getElementById('contaValor').value);
+        if(!desc || isNaN(valor)) return window.mostrarModal("Preencha conta e valor!");
+        const c = { id: Date.now().toString(), desc, valor }; window.contas.push(c); window.renderizarContas(); window.atualizarTelas();
+        document.getElementById('contaDesc').value = ''; document.getElementById('contaValor').value = ''; await enviarParaPlanilha("addConta", c);
+    }
+    window.pagarConta = function(id, desc, valor) {
+        window.mostrarModal(`Confirmar pagamento de ${desc}? (Saída Fixa)`, true, async () => {
+            const t = { id: Date.now().toString(), data: new Date().toLocaleDateString('pt-BR'), desc, tipo: 'saida', valor, cat: 'Fixo', cliente: '', timestamp: Date.now() };
+            window.transacoes.push(t); window.contas = window.contas.filter(c => c.id != id); window.renderizarContas(); window.atualizarTelas();
+            await enviarParaPlanilha("deleteConta", { id }); await enviarParaPlanilha("addTransacao", t);
+        });
+    }
+    window.removerConta = function(id) { window.mostrarModal("Excluir pendência?", true, async () => { window.contas = window.contas.filter(c => c.id != id); window.renderizarContas(); window.atualizarTelas(); await enviarParaPlanilha("deleteConta", { id }); }); }
+    window.renderizarContas = function() {
+        const lista = document.getElementById('lista-contas'); lista.innerHTML = '';
+        window.contas.forEach(c => { 
+            let descricaoConta = c.desc || 'Sem Descrição';
+            lista.innerHTML += `<li class="bill-item"><span><b>${descricaoConta}</b> <br> R$ ${c.valor.toFixed(2)}</span>
+            <div><button class="btn-action-mini btn-del" onclick="window.removerConta('${c.id}')">x</button> <button class="btn-pay" onclick="window.pagarConta('${c.id}', '${descricaoConta}', ${c.valor})">✅ Pagar</button></div></li>`; 
+        });
+    }
+
+    // CLIENTES
+    window.salvarCliente = async function() {
+        let nome = document.getElementById('cliNome').value.trim(); let tel = document.getElementById('cliTel').value.trim(); let notas = document.getElementById('cliNotas').value.trim();
+        if(!nome) return window.mostrarModal("Nome obrigatório!");
+
+        if (window.editandoClienteId) {
+            window.clientes = window.clientes.filter(x => x.id != window.editandoClienteId);
+            await enviarParaPlanilha("deleteCliente", { id: window.editandoClienteId });
+            window.editandoClienteId = null;
+            document.getElementById('btn-salvar-cli').innerText = "GUARDAR CLIENTE";
+            document.getElementById('titulo-form-cli').innerText = "📝 Cadastrar Nova Cliente";
+        }
+
+        const c = { id: Date.now().toString(), nome, telefone: tel, notas, timestamp: Date.now() };
+        window.clientes.push(c); window.atualizarSelectClientes(); window.renderizarListaClientes();
+        document.getElementById('cliNome').value=''; document.getElementById('cliTel').value=''; document.getElementById('cliNotas').value='';
+        await enviarParaPlanilha("addCliente", c);
+    }
+    window.editarCliente = function(id) {
+        let c = window.clientes.find(x => x.id == id); if(!c) return;
+        document.getElementById('cliNome').value = c.nome; document.getElementById('cliTel').value = c.telefone; document.getElementById('cliNotas').value = c.notas;
+        window.editandoClienteId = id; document.getElementById('btn-salvar-cli').innerText = "💾 ATUALIZAR"; document.getElementById('titulo-form-cli').innerText = "✏️ Editar Cliente"; window.scrollTo(0,0);
+    }
+    window.deletarCliente = function(id, nome) { window.mostrarModal(`Apagar cadastro de ${nome}?`, true, async () => { window.clientes = window.clientes.filter(c => c.id != id); window.atualizarSelectClientes(); window.renderizarListaClientes(); await enviarParaPlanilha("deleteCliente", { id }); }); }
+    
     // STOCK (ARMAZENAMENTO LOCAL)
     window.salvarEstoque = function() {
         let nome = document.getElementById('estNome').value.trim(); let qtd = parseInt(document.getElementById('estQtd').value); let min = parseInt(document.getElementById('estMin').value);
@@ -877,6 +1005,23 @@
         } else {
             document.getElementById('barra-meta-fat').style.width = "0%";
             document.getElementById('texto-meta-fat').innerText = "Meta não definida";
+        }
+
+        // Progresso de Contas a Pagar
+        let totalPagas = transacoesMes.filter(t => (t.cat || '') === 'Fixo' && t.tipo === 'saida').reduce((acc, t) => acc + (parseFloat(t.valor)||0), 0);
+        let totalContasMes = totalPagas + totalPendente;
+
+        document.getElementById('valor-contas-pagas').innerText = `R$ ${totalPagas.toFixed(2)} / R$ ${totalContasMes.toFixed(2)}`;
+        if (totalContasMes > 0) {
+            let porcCP = (totalPagas / totalContasMes) * 100; if(porcCP > 100) porcCP = 100;
+            document.getElementById('barra-contas-pagas').style.width = `${porcCP}%`;
+            document.getElementById('texto-contas-pagas').innerText = `${porcCP.toFixed(0)}%`;
+            if (porcCP === 100) document.getElementById('barra-contas-pagas').style.background = "var(--green)";
+            else document.getElementById('barra-contas-pagas').style.background = "linear-gradient(90deg, #e74c3c, #f1c40f)";
+        } else {
+            document.getElementById('barra-contas-pagas').style.width = "0%";
+            document.getElementById('texto-contas-pagas').innerText = "0%";
+            document.getElementById('barra-contas-pagas').style.background = "var(--bg)";
         }
 
         // Gráficos
